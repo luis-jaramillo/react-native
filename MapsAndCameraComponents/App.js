@@ -7,25 +7,31 @@ import Constants from 'expo-constants';
 
 
 export default function App() {
-  const [location, setLocation] = useState({})
-  const askForLocation = async ()=> {
-      const {status} = await Location.requestForegroundPermissionsAsync()
-      
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
       console.log(status)
-      if(status !== 'granted'){
-        return Alert.alert("NO hay permiso para acceder a la ubicacion")
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
       }
-      let currentLocation = await Location.getCurrentPositionAsync({
+
+      let userLocation = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Highest,
         maximumAge: 10000,
         timeout: 5000,
         enableHighAccuracy: true,
       });
-      setLocation(currentLocation)
-  }
-  useEffect(()=>{
-    askForLocation()
-  })
+      setLocation(userLocation);
+    })();
+  }, []);
+ 
+
+
   return (
     <View style={styles.container}>
       <MapView   style={styles.mapContainer} >
@@ -39,6 +45,7 @@ export default function App() {
       </MapView>
     </View>
   );
+   
 }
 
 const styles = StyleSheet.create({
